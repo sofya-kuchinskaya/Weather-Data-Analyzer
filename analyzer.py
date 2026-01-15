@@ -1,9 +1,7 @@
 import requests
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot  as plt
-from dotenv import load_dotenv
-import os
-import telebot
 
 
 cities = [
@@ -85,8 +83,8 @@ class WeatherApp:
         lons = [loc[1] for loc in locations]
         
         params = {
-            "latitude": ",".join((lat) for lat in lats),
-            "longitude": ",".join((lon) for lon in lons),
+            "latitude": ",".join(lats),
+            "longitude": ",".join(lons),
             "current": "temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m",
             "timezone": "auto"
         }
@@ -108,8 +106,7 @@ class WeatherApp:
 {'='*30}
         """
     
-    def plot_forecast(self, data: dict):
-        """Построение графика"""
+    def plot_forecast(self, data: dict, return_image=False):
         hourly = data.get('hourly', {})
         
         df = pd.DataFrame({
@@ -121,11 +118,37 @@ class WeatherApp:
             x='time',                    
             y='temperature',             
             kind='line', figsize=(12, 6))
-        plt.show()
+        
+        if return_image:
+            import io
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png')
+            buf.seek(0)
+            plt.close()
+            return buf
+        else:
+            plt.show()
+    
+    def table_comparison(self, data: dict, locations: list):
+        table_rows = []
+        for i in range(len(locations)):
+                    lat, lon = locations[i]
+                    city = data[i]
+                    current = city.get('current', {})
+                    table_rows.append({
+                'Координаты': f"({lat}, {lon})",
+                'Температура': f"{current.get('temperature_2m', 'N/A')}°C",
+                'Влажность': f"{current.get('relative_humidity_2m', 'N/A')}%",
+                'Ветер': f"{current.get('wind_speed_10m', 'N/A')} км/ч",
+                'Погода': self.weather_codes.get(
+                    current.get('weather_code', 0),
+                )
+            })
+        df = pd.DataFrame(table_rows)
+        return df
 
     
     def run(self):
-        """Главное меню программы"""
         print("=" * 50)
         print("🌤  WEATHER DATA ANALYZER")
         print("=" * 50)
@@ -169,25 +192,9 @@ class WeatherApp:
                     locations.append(((coords[i]), (coords[i+1])))
                 
                 data = self.compare_locations(locations)
-                
-                table_rows = []
-                for i in range(len(locations)):
-                    lat, lon = locations[i]
-                    city = data[i]
-                    current = city.get('current', {})
-                    table_rows.append({
-                'Координаты': f"({lat}, {lon})",
-                'Температура': f"{current.get('temperature_2m', 'N/A')}°C",
-                'Влажность': f"{current.get('relative_humidity_2m', 'N/A')}%",
-                'Ветер': f"{current.get('wind_speed_10m', 'N/A')} км/ч",
-                'Погода': self.weather_codes.get(
-                    current.get('weather_code', 0),
-                )
-            })
-                df = pd.DataFrame(table_rows)
                 print("\n" + "="*40)
                 print("📊 ТАБЛИЦА СРАВНЕНИЯ:")
-                print(df)
+                print(self.table_comparison(data, locations))
                 print("="*40)
             
             elif choice == "4":
@@ -198,5 +205,9 @@ class WeatherApp:
                 print("❌ Неверный выбор")
             
             input("\nEnter для продолжения...")      
-app = WeatherApp()
-app.run()
+
+
+if __name__ == "__main__":
+    app = WeatherApp()
+    app.run()
+
