@@ -234,3 +234,70 @@ def process_forecast(message):
             parse_mode="Markdown"
         )
         
+def ask_for_compare(message):
+    msg = bot.send_message(
+        message.chat.id,
+        CITIES_TEXT,
+        parse_mode="Markdown"
+    )
+    
+    bot.register_next_step_handler(msg, process_compare)
+
+def process_compare(message):
+    try:
+        coords = message.text.strip().split()
+        if len(coords) < 4 or len(coords) % 2 != 0:
+            raise ValueError()
+        
+        locations = []
+        for i in range(0, len(coords), 2):
+                    locations.append(((coords[i]), (coords[i+1])))
+        
+        data = weather_bot.compare_locations(locations)
+                
+        df = weather_bot.table_comparison(data, locations)
+
+        table_text = f"""🔍 *Сравнение {len(df)} городов:*\n\n{df.to_string(index=False)}\n"""
+        
+        bot.send_message(
+            message.chat.id,
+            table_text,
+            parse_mode="Markdown"
+        )
+    
+    except ValueError as e:
+        error_msg = f"""❌ *Ошибка*
+
+Правильный формат: широта1 долгота1 широта2 долгота2
+Пример: 55.7558 37.6173 1.5074 -0.1278
+
+Попробуйте снова"""
+        msg = bot.send_message(
+            message.chat.id,
+            error_msg,
+            parse_mode="Markdown"
+        )
+        bot.register_next_step_handler(msg, process_compare)
+    
+    except Exception as e:
+        bot.send_message(
+            message.chat.id,
+            f"❌ Ошибка. Попробуйте еще раз чуть позже.",
+            parse_mode="Markdown"
+        )
+ 
+@bot.message_handler(func=lambda msg: True)
+def handle_other_messages(message): 
+        bot.send_message(
+            message.chat.id,
+
+
+"🤔 *Не понимаю команду*\n\n"
+            "Используйте команды:\n"
+            "/start - показать меню с кнопками\n"
+            "/help - справка по использованию\n",
+            parse_mode="Markdown"
+        )
+
+if __name__ == "__main__":
+    bot.polling(none_stop=True)
