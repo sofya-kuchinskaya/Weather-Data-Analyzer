@@ -32,9 +32,13 @@
 ## 📁 Структура проекта
 Weather-Data-Analyzer
 ├── analyzer.py # Основной модуль анализа погоды
+
 ├── weather_bot.py # Телеграм-бот
+
 ├── requirements.txt # Зависимости
+
 ├── .gitignore # Игнорируемые файлы
+
 └── README.md # Документация
 
 ## 🚀 Установка и запуск
@@ -42,10 +46,12 @@ Weather-Data-Analyzer
 ### 1. Клонирование репозитория
 
 git clone https://github.com/sofya-kuchinskaya/Weather-Data-Analyzer
+
 cd Weather-Data-Analyzer
 
 ### 2. Создание виртуального окружения
 python -m venv weather_venv
+
 source weather_venv/bin/activate  # Для Windows: weather_venv\Scripts\activate
 
 ### 3. Установка зависимостей
