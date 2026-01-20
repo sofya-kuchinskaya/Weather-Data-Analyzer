@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot  as plt
 
 
@@ -20,8 +21,6 @@ cities = [
 ]
 
 class WeatherApp:
-    """Полный погодный анализатор в одном классе"""
-    
     def __init__(self):
         self.base_url = "https://api.open-meteo.com/v1/forecast"
         self.weather_codes = {
